@@ -21,6 +21,7 @@
   </properties>
 
   <modules>
+    <module>kafka-producer</module>
     <module>kafka-consumer</module>
     <module>kafka-avro</module>
   </modules>
