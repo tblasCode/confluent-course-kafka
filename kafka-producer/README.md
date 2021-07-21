@@ -2,7 +2,52 @@
 
 # Getting started
 
+**Características**
+- También se denomina "publicador", "publisher", "productor", "editor" o "escritor"
+- Genera un mensaje sobre un topic específico (no debería de tener en cuenta la partición utilizada o bien usar el criterio asignado) añadiéndolo por el final
+- El mensaje se compone : nombre del topic, offset y el nº de partición al que enviar
+- Múltiples productores pueden escribir sobre diferentes particiones del mismo topic
+- Cada productor tiene su propio offset
+
+**Configuración**
+
+Nota : los parámetros de configuración se detallarán en los ejercicios prácticos
+
+- Tipo de comunicación : síncrona (sync) o asíncrona (async)
+  - Tener en cuenta el tiempo del evento , el tiempo de espera y el tiempo de procesamiento
+- Tamaño del Batch (agrupación de mensajes)
+  - Se mide en bytes totales y no en nº de mensajes
+  - Nunca debe exceder la memoria total (Por defecto 16384)
+  - Hay que tratar que el productor se encuentre activo la mayor parte del tiempo posible
+  - Se aconseja determinar un tamaño adecuado a las características del topic y a los criterios de funcionalidad a implmentar
+  - Tener un mayor tamaño (mayor cantidad de bytes de elementos que componen el byte) implica tener mayor rendimiento pero provoca mayor latencia (tiempo que lleva procesar un elemento)
+- Se le puede aplicar compresión
+
+**Carga/Reparto de trabajo :**
+- Por defecto "Round-Robin"
+    - Se distribuyen los mensajes uniformemente en las particiones del topic
+- En base a algún criterio
+    - Los mensajes se asignarán a una partición en concreto en base a unas necesidades específicas -> requiere un desarrollo custom
+    - Se usará la clave del mensaje y un particionador (reglas de negocio propias) que generara un hash de la clave y lo mapeará a una partición específica en concreto (por ejemplo mediante un sistema de prioridades)
+    - Se asegurará que este mapeo sea determinista -> la misma clave elige la misma partición cada vez
 ## ACK
+
+**Nivel de consistencia o replicación:** (request.required.acks) -> Afecta a la durabilidad de los mensajes
+
+- ACK=0
+El productor NO esperan ningún ACK desde los brokers
+Los mensajes añadidos al topic son considerados enviados
+El mensaje se pierde si la partición leader se cae
+No garantiza la durabilidad
+  
+- ACK=1
+La partición leader escribe el mensaje en su log local pero sin confirmar la escritura a los followers/replicas
+Si el leader falla después de enviar el ACK, entonces el mensaje puede perderse
+  
+- ACK=all (-1)
+La partición leader espera la confirmación de escritura de todos los ISR antes de enviar el ACK al productor
+Garantiza que los mensajes NO serán perdidos si uno de los ISR se encuentra vivo
+Debería usar como mínimo una réplica
 
 ## Idempotent Producers
 https://www.cloudkarafka.com/blog/apache-kafka-idempotent-producer-avoiding-message-duplication.html
