@@ -11,6 +11,12 @@
 
 **Configuración**
 
+- Reintentos: esta configuración se utiliza para establecer el número máximo de reintentos que puede realizar el productor en caso de que falle la publicación de un mensaje. Si su aplicación no puede permitirse perder la publicación de datos, aumentamos este recuento para garantizar la publicación de nuestros datos.
+- Tamaño de lote: está configurado para tener un alto rendimiento en nuestra aplicación de productor al combinar varias llamadas de red en una. batch.sizemide el tamaño del lote en bytes totales, cuántos bytes se recopilarán antes de enviarlos al corredor de Kafka. Tiene sentido aumentar su valor cuando su productor está publicando datos todo el tiempo para tener el mejor rendimiento, de lo contrario, tendrá que esperar hasta que se recopile el tamaño dado. El valor predeterminado es 16384 .
+- Tiempo prolongado: esta configuración colabora con el tamaño del lote para lograr un alto rendimiento. linger.msestablece el tiempo máximo para almacenar datos en búfer en modo asíncrono. Supongamos que establecemos 300 kb de entrada batch.sizey 10 ms de entrada linger.ms, luego el productor espera hasta que se infringe al menos uno de ellos. Por defecto, el productor no espera. Envía el búfer cada vez que hay datos disponibles. Esto reduciría la cantidad de solicitudes enviadas, pero agregaría hasta n milisegundos de latencia a los registros enviados.
+- Reconocimientos: se utiliza para establecer el número de réplicas que esperará el nodo coordinador antes de enviar un reconocimiento exitoso a la aplicación productora. Hay 3 posibles valores para esta configuración - 0,1 and -1(all). 0 significa que no se requiere reconocimiento. Se establece cuando se requiere baja latencia. -1 (o todos) significa que la respuesta de todas las réplicas para la partición dada es inevitable y se establece cuando la consistencia de los datos es más crucial.
+Hay una propiedad más importante min.insync.replicasque funciona con la acks=all propiedad. Para cualquier solicitud de publicación acks=allque deba ejecutarse, debe haber al menos estas muchas réplicas sincronizadas en línea; de lo contrario, el productor obtendrá excepciones.
+
 Nota : los parámetros de configuración se detallarán en los ejercicios prácticos
 
 - Tipo de comunicación : síncrona (sync) o asíncrona (async)
@@ -68,6 +74,24 @@ You must either leave max.in.flight.requests.per.connection (alias max.in.flight
 cimpl.KafkaException: KafkaError{code=_INVALID_ARG,val=-186,str="Failed to create producer: `max.in.flight` must be set <= 5 when `enable.idempotence` is true"}
 ````
 
+## Send
+
+- Método Send (): hay 3 formas de publicar mensajes en un tema de Kafka. 
+  - A. Disparar y olvidar: es la forma más rápida de publicar mensajes, pero los mensajes podrían perderse aquí.
+    ````
+    RecordMetadata rm = producer.send(record);
+    ````
+  - B. Sincrónico - Es el método más lento, lo usamos cuando no podemos permitirnos perder ningún mensaje. Bloquea el hilo para producir un nuevo mensaje hasta que se reciba un reconocimiento del último mensaje publicado.
+    ````
+    RecordMetadata rm = producer.send(record).get();
+    ````
+  - C. Asincrónico: nos brinda un mejor rendimiento en comparación con el sincrónico, ya que no esperamos los reconocimientos.
+    ````
+    producer.send(record, new Callback(){
+    @Override
+    onComplete(RecordMetadata rm, Exception ex){...}
+    })
+    ````
 
 # Commands
 

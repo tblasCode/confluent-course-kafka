@@ -51,3 +51,18 @@ services:
       PORT: 9021
       CONTROL_CENTER_LOG4J_ROOT_LOGLEVEL: 'ERROR'
       CONTROL_CENTER_TOOLS_LOG4J_LOGLEVEL: 'ERROR'
+
+  schema_registry:
+    image: confluentinc/cp-schema-registry:6.2.0
+    hostname: schema_registry
+    container_name: schema_registry
+    depends_on:
+    - zookeeper
+    - broker-1
+    ports:
+    - "8081:8081"
+    environment:
+      SCHEMA_REGISTRY_HOST_NAME: schema_registry
+      SCHEMA_REGISTRY_KAFKASTORE_CONNECTION_URL: 'zookeeper:2181'
+      SCHEMA_REGISTRY_ACCESS_CONTROL_ALLOW_ORIGIN: '*'
+      SCHEMA_REGISTRY_ACCESS_CONTROL_ALLOW_METHODS: 'GET,POST,PUT,OPTIONS'

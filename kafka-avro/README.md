@@ -258,4 +258,6 @@ Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduc
 
 * 0.0.1
 
-## Authors
+## References
+
+- https://docs.confluent.io/platform/current/schema-registry/
